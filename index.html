@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>交互式七段数码管</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #10151d;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    color: #00eaff;
+    letter-spacing: 2px;
+}
+
+.display {
+    width: 220px;
+    height: 340px;
+    padding: 25px;
+    background: #080b10;
+    border: 2px solid #30404e;
+    border-radius: 18px;
+    box-shadow: 0 0 25px #00eaff20;
+}
+
+.digit {
+    position: relative;
+    width: 170px;
+    height: 290px;
+}
+
+/* 所有灯段默认熄灭 */
+.seg {
+    position: absolute;
+    background: #292d33;
+    transition: background .15s, box-shadow .15s;
+}
+
+/* 灯段点亮 */
+.seg.on {
+    background: #ff3030;
+    box-shadow: 0 0 8px #ff3030, 0 0 20px #ff2020;
+}
+
+/* a、g、d：横向灯段 */
+.a, .g, .d {
+    width: 90px;
+    height: 15px;
+    left: 40px;
+    clip-path: polygon(
+        10% 0, 90% 0, 100% 50%,
+        90% 100%, 10% 100%, 0 50%
+    );
+}
+
+.a { top: 0; }
+.g { top: 137px; }
+.d { bottom: 0; }
+
+/* b、c、e、f：纵向灯段 */
+.b, .c, .e, .f {
+    width: 15px;
+    height: 115px;
+    clip-path: polygon(
+        0 8%, 50% 0, 100% 8%,
+        100% 92%, 50% 100%, 0 92%
+    );
+}
+
+.f { left: 25px; top: 10px; }
+.b { right: 25px; top: 10px; }
+.e { left: 25px; bottom: 10px; }
+.c { right: 25px; bottom: 10px; }
+
+.current {
+    margin: 20px;
+    color: #ff4545;
+    font-size: 22px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 55px);
+    gap: 12px;
+    margin-top: 10px;
+}
+
+button {
+    height: 48px;
+    border: 1px solid #52616f;
+    border-radius: 8px;
+    background: #202b36;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    transition: .15s;
+}
+
+button:hover {
+    border-color: #00eaff;
+    color: #00eaff;
+}
+
+button.active {
+    background: #00cfe8;
+    color: #10151d;
+    border-color: #00eaff;
+    font-weight: bold;
+}
+
+.tip {
+    margin-top: 25px;
+    color: #94a3b3;
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>七段数码管</h2>
+
+<div class="display">
+    <div class="digit" id="digit">
+        <div class="seg a" data-seg="a"></div>
+        <div class="seg b" data-seg="b"></div>
+        <div class="seg c" data-seg="c"></div>
+        <div class="seg d" data-seg="d"></div>
+        <div class="seg e" data-seg="e"></div>
+        <div class="seg f" data-seg="f"></div>
+        <div class="seg g" data-seg="g"></div>
+    </div>
+</div>
+
+<div class="current">
+    当前显示：<span id="current">0</span>
+</div>
+
+<div class="buttons" id="buttons"></div>
+
+<p class="tip">点击下方任意数字，查看七段灯的变化</p>
+
+<script>
+// 编码顺序：abcdefg
+// 1 = 点亮，0 = 熄灭
+const codes = {
+    0: "1111110",
+    1: "0110000",
+    2: "1101101",
+    3: "1111001",
+    4: "0110011",
+    5: "1011011",
+    6: "1011111",
+    7: "1110000",
+    8: "1111111",
+    9: "1111011"
+};
+
+const segments = [...document.querySelectorAll(".seg")];
+const currentText = document.getElementById("current");
+const buttonsBox = document.getElementById("buttons");
+
+// 创建数字 0～9 按钮
+for (let n = 0; n <= 9; n++) {
+    const btn = document.createElement("button");
+    btn.textContent = n;
+    btn.dataset.number = n;
+    btn.addEventListener("click", () => showDigit(n));
+    buttonsBox.appendChild(btn);
+}
+
+// 显示指定数字
+function showDigit(n) {
+    const code = codes[n];
+
+    segments.forEach((seg, index) => {
+        seg.classList.toggle("on", code[index] === "1");
+    });
+
+    currentText.textContent = n;
+
+    document.querySelectorAll(".buttons button").forEach(btn => {
+        btn.classList.toggle(
+            "active",
+            Number(btn.dataset.number) === n
+        );
+    });
+}
+
+// 默认显示数字 0
+showDigit(0);
+</script>
+
+</body>
+</html>
